@@ -188,20 +188,28 @@ elif [[ "$(uname)" == 'Linux' ]]; then
             exit 1
         fi
     elif [[ $distribution == 'centos' ]]; then
-        if [[ $centos_major_version == '7' ]]; then
-            sudo yum install -y epel-release # a lot of things live in EPEL
-            sudo yum install -y cmake curl readline-devel ncurses-devel \
-                                gcc-c++ gcc-gfortran git gnuplot unzip \
-                                nodejs npm libjpeg-turbo-devel libpng-devel \
-                                ImageMagick GraphicsMagick-devel fftw-devel \
-                                sox-devel sox zeromq3-devel \
-                                qt-devel qtwebkit-devel sox-plugins-freeworld
-            sudo yum install -y python-ipython
-            install_openblas
-        else
-            echo "Only CentOS 7 is supported for now, aborting."
+        if [[ $centos_major_version -lt '6' ]]; then
+            echo "CentOS versions below 6 are not supported. Exiting."
             exit 1
         fi
+        sudo yum install -y epel-release # a lot of things live in EPEL
+        sudo yum install -y cmake curl readline-devel ncurses-devel \
+                            gcc-c++ gcc-gfortran git gnuplot unzip \
+                            nodejs npm libjpeg-turbo-devel libpng-devel \
+                            ImageMagick GraphicsMagick-devel fftw-devel \
+                            sox-devel sox zeromq3-devel \
+                            qt-devel qtwebkit-devel python-ipython
+        
+        if [[ $centos_major_version == '7' ]]; then
+            sudo yum install -y sox-plugins-freeworld # doesn't exist in Cent6
+        elif [[ $centos_major_version == '6' ]]; then
+            # argparse is a missing dependency for ipython in CentOS 6
+            sudo yum install -y python-argparse
+        else
+            echo "This version of CentOS isn't supported, but we'll try anyway"
+        fi
+
+        install_openblas
     fi
 
 else
